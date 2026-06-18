@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The River House Group · Pacing de Reservas 26/27</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', Georgia, serif; background: #EDEBE4; min-height: 100vh; padding: 2rem 1rem; }
+  .wrap { max-width: 960px; margin: 0 auto; }
+
+  /* GROUP BAR */
+  .grp { background: #1F1810; border-radius: 12px 12px 0 0; padding: 1.15rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid rgba(160,137,106,.22); }
+  .gb { display: flex; flex-direction: column; }
+  .ge { font-family: Arial, sans-serif; font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: #A0896A; margin-bottom: 5px; }
+  .gn { font-size: 22px; color: #F5F1EB; letter-spacing: .14em; font-weight: normal; }
+  .gtabs { display: flex; gap: 7px; flex-wrap: wrap; }
+  .lt { font-family: Arial, sans-serif; font-size: 11.5px; letter-spacing: .03em; padding: 8px 16px; border-radius: 7px; border: .5px solid rgba(160,137,106,.45); background: transparent; color: #C9BAA5; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+  .lt:hover:not(.a) { background: rgba(160,137,106,.14); color: #F5F1EB; }
+  .lt.a { background: #A0896A; color: #1F1810; border-color: #A0896A; }
+
+  /* LODGE HEADER */
+  .hdr { background: #2C2318; padding: 1.4rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .hl { display: flex; align-items: center; gap: 1.25rem; }
+  .logo { height: 58px; width: auto; display: block; }
+  .txtmark { font-size: 26px; color: #F5F1EB; letter-spacing: .04em; line-height: 1; padding-right: .4rem; border-right: 1px solid rgba(160,137,106,.4); }
+  .ht { display: flex; flex-direction: column; }
+  .ey { font-family: Arial, sans-serif; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #A0896A; margin-bottom: 4px; }
+  .ti { font-size: 18px; font-weight: normal; color: #F5F1EB; letter-spacing: .02em; }
+  .wb { text-align: center; border: 1px solid #A0896A; border-radius: 8px; padding: 9px 20px; background: rgba(160,137,106,.12); flex-shrink: 0; }
+  .wl { font-family: Arial, sans-serif; font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: #A0896A; }
+  .wn { font-size: 28px; color: #F5F1EB; font-weight: normal; line-height: 1.1; }
+
+  /* BODY */
+  .body { background: #F5F1EB; border-radius: 0 0 12px 12px; padding: 1.75rem 2rem 2rem; }
+  .se { font-family: Arial, sans-serif; font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: #7A6650; margin-bottom: .85rem; }
+
+  /* KPI GRID */
+  .kg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  @media (max-width: 600px) { .kg { grid-template-columns: repeat(2, 1fr); } .hdr { flex-direction: column; gap: 1rem; align-items: flex-start; } .grp { flex-direction: column; align-items: flex-start; } }
+  .kpi { background: #EDE7DC; border-radius: 8px; padding: 14px 16px; border: .5px solid #C9BAA5; }
+  .kl { font-family: Arial, sans-serif; font-size: 11px; color: #7A6650; margin-bottom: 6px; line-height: 1.3; }
+  .kv { font-size: 21px; color: #2C2318; letter-spacing: -.01em; }
+  .ks { font-family: Arial, sans-serif; font-size: 10px; color: #A0896A; margin-top: 3px; }
+
+  /* CARDS */
+  .card { background: #EDE7DC; border: .5px solid #C9BAA5; border-radius: 10px; padding: 1.25rem 1.4rem; margin-bottom: 1.1rem; }
+  .ct { font-family: Arial, sans-serif; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #7A6650; margin-bottom: 1rem; }
+
+  /* PROGRESS */
+  .pbg { background: #C9BAA5; border-radius: 4px; height: 6px; }
+  .pf { height: 6px; border-radius: 4px; background: #6B5332; }
+  .pl { display: flex; justify-content: space-between; font-family: Arial, sans-serif; font-size: 10px; color: #7A6650; margin-top: 5px; }
+  .pr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+  .pr span:first-child { font-family: Arial, sans-serif; font-size: 13px; color: #2C2318; }
+  .pr span:last-child { font-size: 19px; color: #6B5332; }
+
+  /* TOGGLES */
+  .tg { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .t { font-family: Arial, sans-serif; font-size: 11px; padding: 5px 13px; border-radius: 6px; border: .5px solid #C9BAA5; background: #F5F1EB; color: #7A6650; cursor: pointer; transition: background .15s, color .15s; }
+  .t.a { background: #2C2318; color: #F5F1EB; border-color: #2C2318; }
+  .t:hover:not(.a) { background: #E0D9CE; }
+
+  /* LEGEND */
+  .lg { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-family: Arial, sans-serif; font-size: 11px; color: #7A6650; }
+  .lg span { display: flex; align-items: center; gap: 5px; }
+  .lsq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .ld { width: 18px; height: 0; border-top: 2px dashed #A0896A; flex-shrink: 0; }
+
+  /* TABLE */
+  .mt { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mt th { font-family: Arial, sans-serif; font-size: 10px; font-weight: normal; letter-spacing: .06em; text-transform: uppercase; color: #7A6650; text-align: right; padding: 5px 8px; border-bottom: .5px solid #C9BAA5; }
+  .mt th:first-child { text-align: left; }
+  .mt td { padding: 8px; text-align: right; border-bottom: .5px solid #D6CBBF; color: #2C2318; font-family: Arial, sans-serif; font-size: 12px; }
+  .mt td:first-child { text-align: left; font-family: Georgia, serif; }
+  .mt tr:last-child td { border-bottom: none; font-weight: 600; background: rgba(107,83,50,.07); }
+  .tv { color: #8B6914; }
+
+  /* PLACEHOLDER */
+  .ph { background: #EDE7DC; border: .5px dashed #C9BAA5; border-radius: 10px; padding: 2.4rem 1.5rem; text-align: center; }
+  .ph .pi { font-size: 30px; margin-bottom: .6rem; }
+  .ph .pt2 { font-size: 17px; color: #2C2318; margin-bottom: .5rem; }
+  .ph .pd { font-family: Arial, sans-serif; font-size: 12px; color: #7A6650; line-height: 1.55; max-width: 460px; margin: 0 auto; }
+
+  /* FOOTER */
+  .ft { font-family: Arial, sans-serif; font-size: 10px; color: #A0896A; text-align: center; margin-top: 1.75rem; letter-spacing: .05em; }
+  .cw { position: relative; width: 100%; height: 260px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- GROUP BAR -->
+  <div class="grp">
+    <div class="gb">
+      <span class="ge">Portfolio de lodges &middot; Patagonia</span>
+      <span class="gn">THE RIVER HOUSE GROUP</span>
+    </div>
+    <div class="gtabs" id="gtabs">
+      <button class="lt a" data-lodge="rhl">River House Lodge</button>
+      <button class="lt" data-lodge="ap">Arroyo Pescado</button>
+      <button class="lt" data-lodge="foyel">Foyel</button>
+    </div>
+  </div>
+
+  <!-- LODGE HEADER -->
+  <div class="hdr">
+    <div class="hl">
+      <span id="lodgeMark"></span>
+      <div class="ht">
+        <span class="ey" id="lodgeEyebrow"></span>
+        <span class="ti">Pacing de Reservas &middot; Temporada 26/27</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+      <div class="wb">
+        <div class="wl">Última actualización</div>
+        <div class="wn" style="font-size:13px;letter-spacing:.01em;">{{ generated_date }}</div>
+      </div>
+      <div class="wb">
+        <div class="wl">Semana actual</div>
+        <div class="wn" id="lodgeWeek">&mdash;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY (rendered by JS) -->
+  <div class="body" id="body"></div>
+
+  <div class="ft">Datos al {{ generated_date }} &middot; The River House Group</div>
+</div>
+
+<script>
+const B1='#6B5332',B2='#A0896A',B3='#D4B483',GR='rgba(160,137,106,0.28)';
+
+const LODGES = {{ lodges_json | safe }};
+
+let cMes=null, cPac=null, currentKey='rhl';
+
+function fmt(n){ return '$'+Number(n).toLocaleString('es-AR'); }
+
+function renderLodge(key){
+  currentKey = key;
+  const L = LODGES[key];
+  document.querySelectorAll('.lt').forEach(b=>b.classList.toggle('a', b.dataset.lodge===key));
+
+  // header mark + meta
+  const lm = document.getElementById('lodgeMark');
+  lm.innerHTML = L.logo
+    ? '<img class="logo" src="'+L.logo+'" alt="'+L.name+'"/>'
+    : '<span class="txtmark">'+L.name+'</span>';
+  document.getElementById('lodgeEyebrow').textContent = L.sub;
+  document.getElementById('lodgeWeek').textContent = L.week ?? '—';
+
+  if(cMes){ cMes.destroy(); cMes=null; }
+  if(cPac){ cPac.destroy(); cPac=null; }
+
+  if(L.placeholder){ renderPlaceholder(L); return; }
+  if(L.bnOnly){ renderBedNights(L); return; }
+  renderDashboard(L);
+}
+
+function renderBedNights(L){
+  const m=L.months;
+  const totCur=m.reduce((a,x)=>a+x.cur,0), totPrev=m.reduce((a,x)=>a+x.prev,0);
+  const varPct = totPrev ? Math.round((totCur-totPrev)/totPrev*100) : 0;
+  const peak = m.slice().sort((a,b)=>b.cur-a.cur)[0];
+  const peakShare = totCur ? Math.round(peak.cur/totCur*100) : 0;
+  const pct = totPrev ? Math.round(totCur/totPrev*100) : 0;
+
+  document.getElementById('body').innerHTML =
+    '<p class="se">Solo bed nights · sin desglose por estado ni facturación (no disponibles para Foyel)</p>'+
+    '<div class="kg">'+
+      kpi('Bed nights 26/27', totCur, 'reservadas · mar–may')+
+      kpi('Bed nights 25/26', totPrev, 'final temporada pasada')+
+      kpi('Variación', (varPct>=0?'+':'')+varPct+'%', 'vs 25/26')+
+      kpi('Mes pico', peak.l, peak.cur+' BN · '+peakShare+'% del total')+
+      kpi('Grupos 26/27', L.groupsCur, L.groupsCurList)+
+      kpi('Grupos 25/26', L.groupsPrev, L.groupsPrevList)+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Avance vs temporada pasada — bed nights</div>'+
+      '<div class="pr"><span>'+totCur+' / '+totPrev+' BN (25/26)</span><span>'+pct+'%</span></div>'+
+      '<div class="pbg"><div class="pf" style="width:'+Math.min(100,pct)+'%"></div></div>'+
+      '<div class="pl"><span>0</span><span>25%</span><span>50%</span><span>75%</span><span>100% (25/26)</span></div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Bed nights por mes — 26/27 vs 25/26</div>'+
+      '<div class="lg">'+
+        '<span><span class="lsq" style="background:#6B5332"></span>26/27</span>'+
+        '<span><span class="lsq" style="background:#A0896A"></span>25/26</span>'+
+      '</div>'+
+      '<div class="cw"><canvas id="cMes"></canvas></div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Detalle por mes</div>'+
+      '<table class="mt"><thead><tr><th>Mes</th><th>BN 26/27</th><th>BN 25/26</th><th>Variación</th></tr></thead><tbody id="mtb"></tbody></table>'+
+    '</div>';
+
+  const tb=document.getElementById('mtb');
+  let html='';
+  m.forEach(x=>{
+    let vt;
+    if(x.cur===0 && x.prev===0) vt='—';
+    else if(!x.prev) vt='—';
+    else { const v=Math.round((x.cur-x.prev)/x.prev*100); vt=(v>=0?'+':'')+v+'%'; }
+    html+='<tr><td>'+x.l+'</td><td>'+x.cur+'</td><td>'+x.prev+'</td><td class="tv">'+vt+'</td></tr>';
+  });
+  html+='<tr><td>TOTAL</td><td>'+totCur+'</td><td>'+totPrev+'</td><td class="tv">'+(varPct>=0?'+':'')+varPct+'%</td></tr>';
+  tb.innerHTML=html;
+
+  cMes=new Chart(document.getElementById('cMes'),{
+    type:'bar',
+    data:{ labels:m.map(x=>x.l),
+      datasets:[
+        {label:'26/27', data:m.map(x=>x.cur), backgroundColor:B1},
+        {label:'25/26', data:m.map(x=>x.prev), backgroundColor:B2}
+      ]},
+    options:{...dO,
+      scales:{
+        x:{grid:{display:false}, ticks:{color:'#7A6650',font:{size:11}}},
+        y:{grid:{color:'rgba(160,137,106,0.2)'}, ticks:{color:'#7A6650',font:{size:10}}}
+      },
+      plugins:{...dO.plugins, tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y+' BN'}}}
+    }
+  });
+}
+
+function renderPlaceholder(L){
+  document.getElementById('body').innerHTML =
+    '<div class="ph">'+
+      '<div class="pi">⚙️</div>'+
+      '<div class="pt2">'+L.name+' — datos pendientes de carga</div>'+
+      '<div class="pd">'+L.note+'</div>'+
+    '</div>';
+}
+
+function renderDashboard(L){
+  const k=L.kpis;
+  document.getElementById('body').innerHTML =
+    '<p class="se">KPIs · solo reservas confirmadas (con y sin seña)</p>'+
+    '<div class="kg">'+
+      kpi('Bed nights confirmadas', k.bnConf, 'de '+k.bnPipe+' en pipeline total')+
+      kpi('Guests confirmados', k.guestsConf, 'de '+k.guestsPipe+' en pipeline total')+
+      kpi('Revenue confirmado', fmt(k.revConf), 'USD sin impuestos')+
+      kpi('ADR confirmado', '$'+k.adr, 'USD / bed night')+
+      kpi('Cobrado', fmt(k.cobrado), 'USD ingresado')+
+      kpi('Saldo pendiente', fmt(k.saldo), 'USD por cobrar')+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Avance de ventas — bed nights confirmadas</div>'+
+      '<div class="pr"><span>'+k.bnConf+' / '+L.refBN.toLocaleString('es-AR')+' BN temporada pasada</span>'+
+        '<span>'+Math.round(k.bnConf/L.refBN*100)+'%</span></div>'+
+      '<div class="pbg"><div class="pf" style="width:'+Math.round(k.bnConf/L.refBN*100)+'%"></div></div>'+
+      '<div class="pl"><span>0</span><span>25%</span><span>50%</span><span>75%</span><span>100% (ref. 25/26)</span></div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Pipeline de bed nights por mes</div>'+
+      '<div class="lg">'+
+        '<span><span class="lsq" style="background:#6B5332"></span>Conf. con seña</span>'+
+        '<span><span class="lsq" style="background:#A0896A"></span>Conf. sin seña</span>'+
+        '<span><span class="lsq" style="background:#D4B483"></span>Tentativas</span>'+
+        '<span><span class="ld"></span>25/26 real</span>'+
+      '</div>'+
+      '<div class="cw"><canvas id="cMes"></canvas></div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Pacing acumulado semana a semana</div>'+
+      '<div class="tg">'+
+        '<button class="t a" id="btnBN" onclick="sM(\'bn\')">BN acumuladas</button>'+
+        '<button class="t" id="btnRev" onclick="sM(\'rev\')">Revenue acumulado</button>'+
+      '</div>'+
+      '<div class="lg">'+
+        '<span><span class="lsq" style="background:#6B5332"></span>26/27 confirmadas</span>'+
+        '<span><span class="ld"></span>25/26 final</span>'+
+      '</div>'+
+      '<div class="cw"><canvas id="cPac"></canvas></div>'+
+    '</div>'+
+
+    '<div class="card">'+
+      '<div class="ct">Detalle por mes — pipeline completo</div>'+
+      '<table class="mt"><thead><tr>'+
+        '<th>Mes</th><th>BN conf. seña</th><th>BN sin seña</th><th>BN tent.</th>'+
+        '<th>BN total</th><th>Guests</th><th>Revenue conf.</th>'+
+      '</tr></thead><tbody id="mtb"></tbody></table>'+
+    '</div>';
+
+  buildTable(L);
+  buildMesChart(L);
+  sM('bn');
+}
+
+function kpi(label,val,sub){
+  return '<div class="kpi"><div class="kl">'+label+'</div><div class="kv">'+val+'</div><div class="ks">'+sub+'</div></div>';
+}
+
+function buildTable(L){
+  const tb=document.getElementById('mtb');
+  let html='';
+  L.ms.forEach(m=>{
+    const tB=m.cs+m.cn+m.t, tG=m.gs+m.gn+m.gt, tR=m.rS+m.rN;
+    html+='<tr><td>'+m.l+'</td><td>'+m.cs+'</td><td>'+m.cn+'</td>'+
+      '<td class="tv">'+m.t+'</td><td>'+tB+'</td><td>'+tG+'</td>'+
+      '<td>'+fmt(tR)+'</td></tr>';
+  });
+  const tot=L.ms.reduce((a,m)=>({
+    cs:a.cs+m.cs, cn:a.cn+m.cn, t:a.t+m.t,
+    g:a.g+m.gs+m.gn+m.gt, bn:a.bn+m.cs+m.cn+m.t, r:a.r+m.rS+m.rN
+  }),{cs:0,cn:0,t:0,g:0,bn:0,r:0});
+  html+='<tr><td>TOTAL</td><td>'+tot.cs+'</td><td>'+tot.cn+'</td>'+
+    '<td class="tv">'+tot.t+'</td><td>'+tot.bn+'</td><td>'+tot.g+'</td>'+
+    '<td>'+fmt(tot.r)+'</td></tr>';
+  tb.innerHTML=html;
+}
+
+const dO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+
+function buildMesChart(L){
+  cMes=new Chart(document.getElementById('cMes'),{
+    type:'bar',
+    data:{ labels:L.ms.map(m=>m.l),
+      datasets:[
+        {label:'Conf. con seña', data:L.ms.map(m=>m.cs), backgroundColor:B1, stack:'26'},
+        {label:'Conf. sin seña', data:L.ms.map(m=>m.cn), backgroundColor:B2, stack:'26'},
+        {label:'Tentativas',     data:L.ms.map(m=>m.t),  backgroundColor:B3, stack:'26'},
+        {label:'25/26 real',     data:L.ms.map(m=>m.p),  backgroundColor:GR, stack:'25'},
+      ]},
+    options:{...dO,
+      scales:{
+        x:{grid:{display:false}, ticks:{color:'#7A6650',font:{size:11}}},
+        y:{grid:{color:'rgba(160,137,106,0.2)'}, ticks:{color:'#7A6650',font:{size:10}}}
+      },
+      plugins:{...dO.plugins, tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y+' BN'}}}
+    }
+  });
+}
+
+function sM(m){
+  const L=LODGES[currentKey];
+  if(!L || L.placeholder || L.bnOnly) return;
+  document.getElementById('btnBN').classList.toggle('a', m==='bn');
+  document.getElementById('btnRev').classList.toggle('a', m==='rev');
+  if(cPac){ cPac.destroy(); cPac=null; }
+  const iB=m==='bn';
+  cPac=new Chart(document.getElementById('cPac'),{
+    type:'line',
+    data:{ labels:L.pts.map(p=>'S'+p.w),
+      datasets:[
+        { label:'26/27 confirmadas', data:L.pts.map(p=>iB?p.b:p.r),
+          borderColor:B1, backgroundColor:'rgba(107,83,50,0.07)',
+          fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:B1, borderWidth:2 },
+        { label:'25/26 final', data:L.pts.map(()=>iB?L.refBN:L.refRev),
+          borderColor:B2, borderDash:[5,4], borderWidth:1.5, pointRadius:0, fill:false }
+      ]},
+    options:{...dO,
+      scales:{
+        x:{grid:{display:false}, ticks:{color:'#7A6650',font:{size:10},autoSkip:false,maxRotation:0}},
+        y:{grid:{color:'rgba(160,137,106,0.2)'}, ticks:{color:'#7A6650', font:{size:10},
+          callback:v=>iB?v:'$'+Math.round(v/1000)+'k'}}
+      },
+      plugins:{...dO.plugins, tooltip:{callbacks:{label:ctx=>{
+        const v=ctx.parsed.y;
+        return ctx.datasetIndex===1
+          ? ' Ref. 25/26: '+(iB?v+' BN':'$'+v.toLocaleString())
+          : ' 26/27: '+(iB?v+' BN':'$'+v.toLocaleString());
+      }}}}
+    }
+  });
+}
+
+document.getElementById('gtabs').addEventListener('click', e=>{
+  const b=e.target.closest('.lt'); if(!b) return;
+  renderLodge(b.dataset.lodge);
+});
+
+renderLodge('rhl');
+</script>
+</body>
+</html>

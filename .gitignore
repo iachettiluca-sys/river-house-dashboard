@@ -1,0 +1,10 @@
+.env
+output/_work/
+output/_inspect/
+output/index.html
+inbox/*
+!inbox/.gitkeep
+__pycache__/
+*.pyc
+*.png
+.playwright/

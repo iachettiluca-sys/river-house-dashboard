@@ -1,0 +1,39 @@
+# Configuración del dashboard semanal — The River House Group
+# La REFERENCIA (temporada pasada) es fija: se calculó una vez y no cambia.
+# Solo la temporada corriente se actualiza cada semana.
+
+week_now: 23            # número de semana actual del ciclo de ventas (actualizar a mano o calcular)
+
+tgn:
+  start_date: "2026-11-01"   # rango de búsqueda en TGN para RHL y AP (temporada 26/27)
+  end_date:   "2027-04-30"
+
+foyel_tgn:
+  start_date: "2027-03-01"   # Foyel: temporada otoño (marzo–abril)
+  end_date:   "2027-04-30"
+
+lodges:
+  rhl:
+    name: "River House Lodge"
+    sub:  "Río Chimehuin · San Martín de los Andes"
+    logo: null
+    ref:                # referencia 25/26 (fija)
+      refBN: 1078
+      refRev: 660467
+      p: { Nov: 127, Dic: 227, Ene: 251, Feb: 218, Mar: 172, Abr: 83 }
+  ap:
+    name: "Arroyo Pescado"
+    sub:  "Esquel · Chubut"
+    logo: null
+    ref:                # referencia 25/26
+      refBN: 229
+      refRev: 118009
+      p: { Nov: 12, Dic: 79, Ene: 62, Feb: 16, Mar: 30, Abr: 30 }
+  foyel:
+    name: "Foyel"
+    sub:  "Temporada otoño · marzo a abril"
+    logo: null
+    ref:                # referencia 26 — completar cuando se tenga el dato real
+      refBN: 0
+      refRev: 0
+      p: { Mar: 0, Abr: 0 }

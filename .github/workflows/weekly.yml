@@ -1,0 +1,59 @@
+name: Dashboard semanal RHG
+
+on:
+  schedule:
+    - cron: "0 11 * * 1"   # todos los lunes 11:00 UTC (~08:00 Argentina). Ajustar a gusto.
+  workflow_dispatch: {}     # permite dispararlo a mano desde la pestaña Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Generar dashboard
+        env:
+          TGN_USER: ${{ secrets.TGN_USER }}
+          TGN_PASS: ${{ secrets.TGN_PASS }}
+          TGN_LOGIN_URL: ${{ secrets.TGN_LOGIN_URL }}
+          TGN_SEARCH_URL: ${{ secrets.TGN_SEARCH_URL }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+        run: python build.py || echo "build terminó con errores (ver mail), publico lo que haya"
+
+      - name: Preparar sitio
+        run: |
+          mkdir -p _site
+          cp output/index.html _site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
