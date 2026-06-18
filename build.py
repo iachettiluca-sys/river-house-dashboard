@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from parse_tgn import parse_tgn_csv          # noqa: E402
 from render import render_dashboard          # noqa: E402
-from notify import send_failure_email, send_success_email  # noqa: E402
+from notify import send_failure_email, send_success_email, send_unknown_source_email  # noqa: E402
 
 INBOX = ROOT / "inbox"
 WORK = ROOT / "output" / "_work"
@@ -66,6 +66,7 @@ def build_tgn_lodge(key: str, cfg: dict, anchor: dt.date, errors: list,
         data, anchor_date=anchor, week_now=cfg["week_now"],
         ref=lc["ref"], meta=dict(name=lc["name"], sub=lc["sub"], logo=lc.get("logo")),
         season_months=FOYEL_MONTHS if key == "foyel" else None,
+        known_sources=cfg.get("sources"),
     )
 
 
@@ -94,6 +95,11 @@ def main() -> int:
     if ordered:
         render_dashboard(ordered, OUT)
         print(f"[build] Dashboard escrito en {OUT} ({len(ordered)} lodges)")
+        # Notificar si aparecieron sources nuevos no clasificados
+        for key, lodge_data in ordered.items():
+            unknown = lodge_data.get("channels", {}).get("unknown", [])
+            if unknown:
+                send_unknown_source_email(key, unknown)
         if not errors:
             send_success_email(list(ordered.keys()), cfg["week_now"])
 

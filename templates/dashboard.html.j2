@@ -290,11 +290,65 @@ function renderDashboard(L){
         '<th>Mes</th><th>BN conf. seña</th><th>BN sin seña</th><th>BN tent.</th>'+
         '<th>BN total</th><th>Guests</th><th>Revenue conf.</th>'+
       '</tr></thead><tbody id="mtb"></tbody></table>'+
-    '</div>';
+    '</div>'+
+
+    '<div class="card" id="chCard"></div>';
 
   buildTable(L);
   buildMesChart(L);
+  buildChannelCard(L);
   sM('bn');
+}
+
+function buildChannelCard(L) {
+  const el = document.getElementById('chCard');
+  if (!L.channels) { el.style.display='none'; return; }
+  const ch = L.channels;
+  const allItems = [
+    {name:'Directo', bn:ch.direct, type:'direct'},
+    ...ch.outfitters.map(o=>({...o, type:'outfitter'})),
+    ...ch.agencies.map(a=>({...a, type:'agency'})),
+  ];
+  const maxBN = Math.max(...allItems.map(x=>x.bn), 1);
+
+  function row(item, isHeader) {
+    const pct = Math.round(item.bn / maxBN * 100);
+    const nameStyle = isHeader
+      ? 'font-family:Georgia,serif;font-size:14px;color:#2C2318'
+      : 'font-family:Arial,sans-serif;font-size:12px;color:#7A6650;padding-left:14px';
+    const barColor = isHeader ? '#6B5332' : '#A0896A';
+    const bnStyle = isHeader
+      ? 'font-size:14px;color:#2C2318;white-space:nowrap;padding-left:12px;font-family:Georgia,serif'
+      : 'font-size:12px;color:#7A6650;white-space:nowrap;padding-left:12px;font-family:Arial,sans-serif';
+    return '<tr>'+
+      '<td style="'+nameStyle+';padding:5px 8px 5px 0;width:140px">'+item.name+'</td>'+
+      '<td style="width:100%;padding:5px 0">'+
+        '<div class="pbg" style="margin:0"><div class="pf" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
+      '</td>'+
+      '<td style="'+bnStyle+'">'+item.bn+' BN</td>'+
+    '</tr>';
+  }
+
+  let html = '<div class="ct">BN por canal — confirmadas</div>';
+  html += '<table style="width:100%;border-collapse:collapse">';
+
+  // Directo
+  html += row({name:'Directo', bn:ch.direct}, true);
+
+  // Outfitters
+  if (ch.outfitters.length) {
+    html += '<tr><td colspan="3" style="padding:10px 0 4px;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#A0896A">Outfitters</td></tr>';
+    ch.outfitters.forEach(o => { html += row(o, false); });
+  }
+
+  // Agencias
+  if (ch.agencies && ch.agencies.length) {
+    html += '<tr><td colspan="3" style="padding:10px 0 4px;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#A0896A">Agencias</td></tr>';
+    ch.agencies.forEach(a => { html += row(a, false); });
+  }
+
+  html += '</table>';
+  el.innerHTML = html;
 }
 
 function kpi(label,val,sub){

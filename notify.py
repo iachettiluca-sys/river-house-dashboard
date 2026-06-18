@@ -50,6 +50,27 @@ def send_failure_email(subject: str, body: str, attachments: list[str] | None = 
     print(f"[notify] Email de error enviado a {to}")
 
 
+def send_unknown_source_email(lodge_key: str, unknown_sources: list[str]) -> None:
+    user = os.environ.get("SMTP_USER")
+    to   = os.environ.get("NOTIFY_TO", user)
+    if not (user and to):
+        return
+    src_list = "\n".join(f"  - {s}" for s in unknown_sources)
+    body = (
+        f"Aparecieron sources nuevos en [{lodge_key.upper()}] que no están clasificados:\n\n"
+        f"{src_list}\n\n"
+        f"Respondé a este mail indicando si son outfitters o agencias "
+        f"para agregarlos a config.yaml."
+    )
+    msg = EmailMessage()
+    msg["Subject"] = f"Dashboard RHG — source nuevo en {lodge_key.upper()} sin clasificar"
+    msg["From"] = user
+    msg["To"] = to
+    msg.set_content(body)
+    _send(msg)
+    print(f"[notify] Email de source desconocido enviado a {to}: {unknown_sources}")
+
+
 def send_success_email(lodges_updated: list[str], week_now: int) -> None:
     user = os.environ.get("SMTP_USER")
     team = os.environ.get("NOTIFY_TEAM", "")

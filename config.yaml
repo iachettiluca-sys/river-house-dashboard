@@ -4,6 +4,24 @@
 
 week_now: 23            # número de semana actual del ciclo de ventas (actualizar a mano o calcular)
 
+sources:
+  direct:
+    - DIRECTO
+  outfitters:
+    - RONSOR
+    - PRG
+    - URIBE
+    - TUQUI
+    - Fishing Patagonia
+    - "Patagonia Outfitters (JT)"
+    - FLY WATER
+    - Logreco
+    - TECHERA
+    - JUSTINO
+    - Burell
+    - Justi
+  agencies: []
+
 tgn:
   start_date: "2026-11-01"   # rango de búsqueda en TGN para RHL y AP (temporada 26/27)
   end_date:   "2027-04-30"

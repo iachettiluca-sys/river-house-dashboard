@@ -29,6 +29,7 @@ COLS = {
     "paid": ["total paid", "totalpaid", "paid"],
     "balance": ["balance due", "balancedue", "balance"],
     "created": ["created on", "createdon", "created"],
+    "source": ["source"],
 }
 
 
@@ -84,7 +85,8 @@ def _status_bucket(status: str) -> str:
 
 
 def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
-                  ref: dict, meta: dict, season_months: list | None = None) -> dict:
+                  ref: dict, meta: dict, season_months: list | None = None,
+                  known_sources: dict | None = None) -> dict:
     """
     csv_bytes  : contenido del CSV de TGN (temporada corriente)
     anchor_date: fecha de corte (normalmente hoy); ancla la 'semana actual'
@@ -94,6 +96,11 @@ def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
     return     : dict con la forma que espera el front (LODGES[key])
     """
     sm = season_months if season_months is not None else SEASON_MONTHS
+
+    ks = known_sources or {}
+    direct_set   = {s.lower() for s in ks.get("direct",   ["directo"])}
+    outfitter_set = {s.lower() for s in ks.get("outfitters", [])}
+    agency_set   = {s.lower() for s in ks.get("agencies",  [])}
 
     text = csv_bytes.decode("utf-8-sig", errors="replace")
     delim = _detect_delimiter(text)
@@ -107,6 +114,7 @@ def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
     months = {m: dict(cs=0, cn=0, t=0, gs=0, gn=0, gt=0, rS=0.0, rN=0.0) for m, _ in sm}
     confirmed = []  # (created_date, bn, revenue) para el pacing
     kpi = dict(bnConf=0, bnPipe=0, guestsConf=0, guestsPipe=0, revConf=0.0, cobrado=0.0, saldo=0.0)
+    channel_bn: dict[str, float] = defaultdict(float)  # source -> BN confirmadas
 
     for r in rows[1:]:
         if not r or len(r) <= cm["bn"]:
@@ -140,6 +148,8 @@ def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
             kpi["saldo"] += bal
             created = _parse_date(r[cm["created"]]) if "created" in cm else None
             confirmed.append((created or anchor_date, bn, price))
+            src = r[cm["source"]].strip() if "source" in cm else ""
+            channel_bn[src] += bn
 
     adr = round(kpi["revConf"] / kpi["bnConf"]) if kpi["bnConf"] else 0
 
@@ -156,6 +166,30 @@ def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
 
     pts = _build_pacing(confirmed, anchor_date=anchor_date, week_now=week_now)
 
+    # canal breakdown (solo confirmadas)
+    direct_bn = int(sum(v for k, v in channel_bn.items() if k.lower() in direct_set))
+    outfitters_out = sorted(
+        [{"name": k, "bn": int(v)} for k, v in channel_bn.items()
+         if k.lower() in outfitter_set],
+        key=lambda x: -x["bn"],
+    )
+    agencies_out = sorted(
+        [{"name": k, "bn": int(v)} for k, v in channel_bn.items()
+         if k.lower() in agency_set],
+        key=lambda x: -x["bn"],
+    )
+    unknown_sources = [k for k in channel_bn
+                       if k.lower() not in direct_set
+                       and k.lower() not in outfitter_set
+                       and k.lower() not in agency_set
+                       and k]
+    channels = dict(
+        direct=direct_bn,
+        outfitters=outfitters_out,
+        agencies=agencies_out,
+        unknown=unknown_sources,
+    )
+
     return dict(
         name=meta["name"], sub=meta["sub"], logo=meta.get("logo"),
         week=week_now,
@@ -166,7 +200,7 @@ def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
             cobrado=int(kpi["cobrado"]), saldo=int(kpi["saldo"]),
         ),
         refBN=int(ref["refBN"]), refRev=int(ref["refRev"]),
-        ms=ms, pts=pts,
+        ms=ms, pts=pts, channels=channels,
     )
 
 
