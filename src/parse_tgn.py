@@ -81,7 +81,9 @@ def _status_bucket(status: str) -> str:
         return "cs"
     if "sin sena" in s or "sin seña" in s:
         return "cn"
-    return "t"  # desconocido => tratar como tentativa (no suma a confirmado)
+    if "pago total" in s or "pagado" in s or "completed" in s:
+        return "cn"  # temporadas pasadas: trip completado = confirmado
+    return "t"  # desconocido (free, day use, etc.) => no suma a confirmado
 
 
 def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
@@ -200,6 +202,7 @@ def parse_tgn_csv(csv_bytes: bytes, *, anchor_date: dt.date, week_now: int,
             cobrado=int(kpi["cobrado"]), saldo=int(kpi["saldo"]),
         ),
         refBN=int(ref["refBN"]), refRev=int(ref["refRev"]),
+        refChannels=ref.get("channels"),
         ms=ms, pts=pts, channels=channels,
     )
 

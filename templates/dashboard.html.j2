@@ -304,10 +304,30 @@ function buildChannelCard(L) {
   const el = document.getElementById('chCard');
   if (!L.channels) { el.style.display='none'; return; }
   const ch = L.channels;
+  const ref = L.refChannels;
+
+  // Map ref data by name for quick lookup
+  function refBN(name, type) {
+    if (!ref) return null;
+    if (type === 'direct') return ref.direct || null;
+    const list = type === 'agency' ? ref.agencies : ref.outfitters;
+    if (!list) return null;
+    const found = list.find(x => x.name === name);
+    return found ? found.bn : 0;
+  }
+
+  function delta(cur, prev) {
+    if (prev === null || prev === undefined) return '';
+    const d = cur - prev;
+    const color = d >= 0 ? '#2D6A4F' : '#9B2335';
+    const sign = d >= 0 ? '+' : '';
+    return '<span style="font-family:Arial,sans-serif;font-size:11px;color:'+color+';margin-left:8px">'+sign+d+' vs 25/26</span>';
+  }
+
   const allItems = [
     {name:'Directo', bn:ch.direct, type:'direct'},
     ...ch.outfitters.map(o=>({...o, type:'outfitter'})),
-    ...ch.agencies.map(a=>({...a, type:'agency'})),
+    ...(ch.agencies||[]).map(a=>({...a, type:'agency'})),
   ];
   const maxBN = Math.max(...allItems.map(x=>x.bn), 1);
 
@@ -317,36 +337,33 @@ function buildChannelCard(L) {
       ? 'font-family:Georgia,serif;font-size:14px;color:#2C2318'
       : 'font-family:Arial,sans-serif;font-size:12px;color:#7A6650;padding-left:14px';
     const barColor = isHeader ? '#6B5332' : '#A0896A';
-    const bnStyle = isHeader
-      ? 'font-size:14px;color:#2C2318;white-space:nowrap;padding-left:12px;font-family:Georgia,serif'
-      : 'font-size:12px;color:#7A6650;white-space:nowrap;padding-left:12px;font-family:Arial,sans-serif';
+    const prev = refBN(item.name, item.type);
     return '<tr>'+
-      '<td style="'+nameStyle+';padding:5px 8px 5px 0;width:140px">'+item.name+'</td>'+
+      '<td style="'+nameStyle+';padding:5px 8px 5px 0;width:150px;white-space:nowrap">'+item.name+'</td>'+
       '<td style="width:100%;padding:5px 0">'+
         '<div class="pbg" style="margin:0"><div class="pf" style="width:'+pct+'%;background:'+barColor+'"></div></div>'+
       '</td>'+
-      '<td style="'+bnStyle+'">'+item.bn+' BN</td>'+
+      '<td style="font-family:Arial,sans-serif;font-size:12px;color:#2C2318;white-space:nowrap;padding-left:12px;text-align:right">'+
+        item.bn+' BN'+delta(item.bn, prev)+
+      '</td>'+
     '</tr>';
+  }
+
+  function sectionHeader(label) {
+    return '<tr><td colspan="3" style="padding:10px 0 4px;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#A0896A">'+label+'</td></tr>';
   }
 
   let html = '<div class="ct">BN por canal — confirmadas</div>';
   html += '<table style="width:100%;border-collapse:collapse">';
-
-  // Directo
-  html += row({name:'Directo', bn:ch.direct}, true);
-
-  // Outfitters
+  html += row({name:'Directo', bn:ch.direct, type:'direct'}, true);
   if (ch.outfitters.length) {
-    html += '<tr><td colspan="3" style="padding:10px 0 4px;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#A0896A">Outfitters</td></tr>';
+    html += sectionHeader('Outfitters');
     ch.outfitters.forEach(o => { html += row(o, false); });
   }
-
-  // Agencias
   if (ch.agencies && ch.agencies.length) {
-    html += '<tr><td colspan="3" style="padding:10px 0 4px;font-family:Arial,sans-serif;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#A0896A">Agencias</td></tr>';
+    html += sectionHeader('Agencias');
     ch.agencies.forEach(a => { html += row(a, false); });
   }
-
   html += '</table>';
   el.innerHTML = html;
 }

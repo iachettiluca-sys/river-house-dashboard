@@ -141,14 +141,16 @@ def download_csv(lodge_key: str, *, start_date: str, end_date: str,
             page.locator("input[type='date']").nth(1).fill(end_date)
             time.sleep(0.5)
             page.click("button:has-text('Save')")
-            time.sleep(5)
+            time.sleep(2)
 
             # ---- 4. EXPORT DATA ----
-            export_btn = page.query_selector("button:has-text('Export Data')")
-            if not export_btn:
+            try:
+                page.wait_for_selector("button:has-text('Export Data')", timeout=20000)
+            except Exception:
                 page.screenshot(path=str(shot))
                 raise ScrapeError(f"No encontré el botón Export Data ({lodge_key}). "
                                    "¿Cambió TGN o no hay bookings en el rango?")
+            export_btn = page.query_selector("button:has-text('Export Data')")
 
             with page.expect_download(timeout=45000) as dl_info:
                 export_btn.click()
