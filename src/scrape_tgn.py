@@ -38,8 +38,8 @@ def download_csv(lodge_key: str, *, start_date: str, end_date: str,
     """
     from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
-    user = os.environ.get("TGN_USER")
-    pwd  = os.environ.get("TGN_PASS")
+    user = (os.environ.get("TGN_USER") or "").strip()
+    pwd  = (os.environ.get("TGN_PASS") or "").strip()
     if not user or not pwd:
         raise ScrapeError("Faltan credenciales TGN_USER / TGN_PASS en el entorno.")
 
