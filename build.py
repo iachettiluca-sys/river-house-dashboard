@@ -23,7 +23,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from parse_tgn import parse_tgn_csv          # noqa: E402
 from render import render_dashboard          # noqa: E402
-from notify import send_failure_email        # noqa: E402
+from notify import send_failure_email, send_success_email  # noqa: E402
 
 INBOX = ROOT / "inbox"
 WORK = ROOT / "output" / "_work"
@@ -94,6 +94,8 @@ def main() -> int:
     if ordered:
         render_dashboard(ordered, OUT)
         print(f"[build] Dashboard escrito en {OUT} ({len(ordered)} lodges)")
+        if not errors:
+            send_success_email(list(ordered.keys()), cfg["week_now"])
 
     if errors:
         body = ("El update semanal del dashboard tuvo problemas:\n\n"

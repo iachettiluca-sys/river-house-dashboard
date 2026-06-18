@@ -36,6 +36,7 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+          NOTIFY_TEAM: ${{ secrets.NOTIFY_TEAM }}
         run: |
           mkdir -p output
           python build.py || echo "build terminó con errores (ver mail)"
