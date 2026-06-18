@@ -31,7 +31,6 @@ jobs:
           TGN_PASS: ${{ secrets.TGN_PASS }}
           TGN_LOGIN_URL: ${{ secrets.TGN_LOGIN_URL }}
           TGN_SEARCH_URL: ${{ secrets.TGN_SEARCH_URL }}
-          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
