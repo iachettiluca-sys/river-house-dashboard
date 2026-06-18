@@ -36,12 +36,18 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
-        run: python build.py || echo "build terminó con errores (ver mail), publico lo que haya"
+        run: |
+          mkdir -p output
+          python build.py || echo "build terminó con errores (ver mail)"
 
       - name: Preparar sitio
         run: |
           mkdir -p _site
-          cp output/index.html _site/index.html
+          if [ -f output/index.html ]; then
+            cp output/index.html _site/index.html
+          else
+            echo '<html><body style="font-family:sans-serif;padding:2rem"><h2>Dashboard en mantenimiento</h2><p>El update automático tuvo un error. Revisá el mail de notificación.</p></body></html>' > _site/index.html
+          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:
