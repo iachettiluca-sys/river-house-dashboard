@@ -37,6 +37,7 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
           NOTIFY_TEAM: ${{ secrets.NOTIFY_TEAM }}
+          IS_SCHEDULED: ${{ github.event_name == 'schedule' }}
         run: |
           mkdir -p output
           python build.py || echo "build terminó con errores (ver mail)"

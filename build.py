@@ -11,7 +11,7 @@ Patrón "scrapeá-o-bandeja": cada corrida intenta automático; si TGN cambió,
 te llega un mail y vos dejás el CSV en /inbox -> la próxima corrida lo usa.
 """
 from __future__ import annotations
-import sys, datetime as dt
+import sys, os, datetime as dt
 from pathlib import Path
 
 import yaml
@@ -100,7 +100,7 @@ def main() -> int:
             unknown = lodge_data.get("channels", {}).get("unknown", [])
             if unknown:
                 send_unknown_source_email(key, unknown)
-        if not errors:
+        if not errors and os.environ.get("IS_SCHEDULED") == "true":
             send_success_email(list(ordered.keys()), cfg["week_now"])
 
     if errors:
