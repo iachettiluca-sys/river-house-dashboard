@@ -62,11 +62,18 @@ def download_csv(lodge_key: str, *, start_date: str, end_date: str,
         try:
             # ---- 1. LOGIN ----
             page.goto(BASE_URL, timeout=45000)
-            time.sleep(2)
+            page.wait_for_load_state("networkidle", timeout=20000)
             page.click("text=Log In", timeout=15000)
-            time.sleep(1)
-            page.fill("input[type='email']", user)
-            page.fill("input[name='password']", pwd)
+            # Esperar a que el modal esté listo
+            page.wait_for_selector("input[type='email']", timeout=10000)
+            time.sleep(0.5)
+            # .type() simula tecla por tecla y dispara onChange de React correctamente
+            page.locator("input[type='email']").type(user, delay=40)
+            time.sleep(0.3)
+            page.locator("input[name='password']").type(pwd, delay=40)
+            time.sleep(0.3)
+            # Esperar a que el botón se habilite (React valida el form)
+            page.wait_for_selector("button[type='submit']:not([disabled])", timeout=10000)
             page.click("button[type='submit']")
             page.wait_for_url(
                 lambda url: "/dashboard/" in url and "/select" not in url,
