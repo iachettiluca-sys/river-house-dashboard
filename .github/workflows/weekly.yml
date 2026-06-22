@@ -2,7 +2,7 @@ name: Dashboard semanal RHG
 
 on:
   schedule:
-    - cron: "0 8 * * 1"    # todos los lunes 08:00 UTC (05:00 Argentina)
+    - cron: "0 11 * * 2"    # todos los martes 11:00 UTC (08:00 Argentina)
   workflow_dispatch: {}     # permite dispararlo a mano desde la pestaña Actions
 
 permissions:
