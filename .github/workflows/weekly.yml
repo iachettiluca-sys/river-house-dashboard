@@ -3,16 +3,34 @@ name: Dashboard semanal RHG
 on:
   schedule:
     - cron: "0 11 * * 2"    # todos los martes 11:00 UTC (08:00 Argentina)
-  workflow_dispatch: {}     # permite dispararlo a mano desde la pestaña Actions
+  workflow_dispatch:
+    inputs:
+      send_email:
+        description: "Mandar mail al equipo (aunque no sea el cron automático)"
+        type: boolean
+        default: false
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Keep repo activo para GitHub cron
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: keepalive [skip ci]"
+          git push
+
   build:
     runs-on: ubuntu-latest
+    needs: []
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +55,7 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
           NOTIFY_TEAM: ${{ secrets.NOTIFY_TEAM }}
-          IS_SCHEDULED: ${{ github.event_name == 'schedule' }}
+          IS_SCHEDULED: ${{ github.event_name == 'schedule' || inputs.send_email == true }}
         run: |
           mkdir -p output
           python build.py || echo "build terminó con errores (ver mail)"
