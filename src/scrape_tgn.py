@@ -15,7 +15,7 @@ from pathlib import Path
 
 # Nombres tal como aparecen en la página /dashboard/select de TGN
 LODGE_NAMES = {
-    "rhl":   "River House Lodge Patagonia",
+    "rhl":   "The River House Group",
     "ap":    "Arroyo Pescado Lodge Patagonia",
     "foyel": "Foyel - Southland Outfitters",
 }
