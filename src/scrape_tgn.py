@@ -135,12 +135,21 @@ def download_csv(lodge_key: str, *, start_date: str, end_date: str,
             date_btn.click()
             time.sleep(2)
 
-            # Setear fechas en el modal
-            page.locator("input[type='date']").first.fill(start_date)
+            # TGN ahora abre un drawer lateral "Filters" (antes era un modal con
+            # botón "Save"). Los 2 primeros input[type=date] son "Trip Date Range"
+            # (los que nos interesan); el resto son otros filtros (Booking Created
+            # At, etc.) que dejamos como están. Se confirma con "Apply Filters".
+            # El primer click a veces no dispara el drawer (render lento) -> reintenta.
+            try:
+                page.wait_for_selector("[role='dialog']", timeout=10000)
+            except PWTimeout:
+                date_btn.click()
+                page.wait_for_selector("[role='dialog']", timeout=15000)
+            page.locator("input[type='date']").nth(0).fill(start_date)
             time.sleep(0.5)
             page.locator("input[type='date']").nth(1).fill(end_date)
             time.sleep(0.5)
-            page.click("button:has-text('Save')")
+            page.click("button:has-text('Apply Filters')")
             time.sleep(2)
 
             # ---- 4. EXPORT DATA ----
