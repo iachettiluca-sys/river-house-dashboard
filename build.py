@@ -45,7 +45,7 @@ def _inbox_file(*names: str) -> Path | None:
     return None
 
 
-def build_tgn_lodge(key: str, cfg: dict, anchor: dt.date, errors: list,
+def build_tgn_lodge(key: str, cfg: dict, anchor: dt.date, week_now: int, errors: list,
                     start_date: str | None = None, end_date: str | None = None) -> dict | None:
     lc = cfg["lodges"][key]
     sd = start_date or cfg["tgn"]["start_date"]
@@ -63,7 +63,7 @@ def build_tgn_lodge(key: str, cfg: dict, anchor: dt.date, errors: list,
 
     data = csv_path.read_bytes()
     return parse_tgn_csv(
-        data, anchor_date=anchor, week_now=cfg["week_now"],
+        data, anchor_date=anchor, week_now=week_now,
         ref=lc["ref"], meta=dict(name=lc["name"], sub=lc["sub"], logo=lc.get("logo")),
         season_months=FOYEL_MONTHS if key == "foyel" else None,
         known_sources=cfg.get("sources"),
@@ -73,18 +73,19 @@ def build_tgn_lodge(key: str, cfg: dict, anchor: dt.date, errors: list,
 def main() -> int:
     cfg = load_config()
     anchor = dt.date.today()
+    week_now = anchor.isocalendar()[1]  # semana ISO real del año, se calcula sola cada corrida
     errors: list[str] = []
     lodges: dict = {}
 
     for key in ("rhl", "ap"):
-        d = build_tgn_lodge(key, cfg, anchor, errors)
+        d = build_tgn_lodge(key, cfg, anchor, week_now, errors)
         if d:
             lodges[key] = d
 
     # Foyel: mismo flujo TGN pero con rango de fechas propio
     foyel_cfg = cfg.get("foyel_tgn", {})
     f = build_tgn_lodge(
-        "foyel", cfg, anchor, errors,
+        "foyel", cfg, anchor, week_now, errors,
         start_date=foyel_cfg.get("start_date"),
         end_date=foyel_cfg.get("end_date"),
     )
@@ -101,7 +102,7 @@ def main() -> int:
             if unknown:
                 send_unknown_source_email(key, unknown)
         if not errors and os.environ.get("IS_SCHEDULED") == "true":
-            send_success_email(list(ordered.keys()), cfg["week_now"])
+            send_success_email(list(ordered.keys()), week_now)
 
     if errors:
         body = ("El update semanal del dashboard tuvo problemas:\n\n"

@@ -33,7 +33,7 @@ La **referencia de la temporada pasada** (25/26) es fija y vive en `config.yaml`
      download_csv('ap', start_date='2026-11-01', end_date='2027-04-30', \
                   out_dir=Path('output/_work'), headless=False)"
    ```
-2. **`config.yaml`** — pegar el `drive_file_id` del Excel de Foyel y revisar `week_now` y el rango de fechas.
+2. **`config.yaml`** — pegar el `drive_file_id` del Excel de Foyel y revisar el rango de fechas.
 3. **Secrets** (GitHub → Settings → Secrets and variables → Actions): `TGN_USER`, `TGN_PASS`, `TGN_LOGIN_URL`, `TGN_SEARCH_URL`, `GOOGLE_SA_JSON`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `NOTIFY_TO`. Ver `.env.example`.
 4. **Google Drive**: crear una service account, descargar su JSON (va en `GOOGLE_SA_JSON`), y **compartir el Excel de Foyel con el email de la service account** (permiso lector).
 5. **GitHub Pages**: activarlo en Settings → Pages → Source: "GitHub Actions".
@@ -52,5 +52,5 @@ python build.py
 
 - **Email para Gmail/Workspace**: usar un *app password* (no la contraseña normal); requiere 2FA en la cuenta.
 - **GitHub Actions e IP de datacenter**: TGN podría ver el login desde una IP distinta a la tuya y pedir verificación extra. Si pasa seguido, el modo `inbox/` es tu red de seguridad; si se vuelve crónico, conviene mover el cron a una máquina/VPS tuya (mismo código, solo cambia el scheduler).
-- **`week_now`**: hoy se setea a mano en `config.yaml`. Si querés, se puede calcular automáticamente desde una fecha de inicio de temporada.
+- **`week_now`**: se calcula solo en `build.py` como la semana ISO real del año (`date.today().isocalendar().week`); ya no se setea a mano en `config.yaml`.
 - **Pacing de RHL**: ahora se recalcula desde el CSV (metodología consistente con AP), así que puede diferir un poco de los puntos que estaban cargados a mano en la primera versión.
