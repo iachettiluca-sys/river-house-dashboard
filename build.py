@@ -11,7 +11,7 @@ Patrón "scrapeá-o-bandeja": cada corrida intenta automático; si TGN cambió,
 te llega un mail y vos dejás el CSV en /inbox -> la próxima corrida lo usa.
 """
 from __future__ import annotations
-import sys, os, datetime as dt
+import sys, os, time, datetime as dt
 from pathlib import Path
 
 import yaml
@@ -50,16 +50,26 @@ def build_tgn_lodge(key: str, cfg: dict, anchor: dt.date, week_now: int, errors:
     lc = cfg["lodges"][key]
     sd = start_date or cfg["tgn"]["start_date"]
     ed = end_date   or cfg["tgn"]["end_date"]
+    from scrape_tgn import download_csv, ScrapeError
+
     csv_path = None
-    try:
-        from scrape_tgn import download_csv, ScrapeError
-        csv_path = download_csv(key, start_date=sd, end_date=ed, out_dir=WORK, headless=True)
-    except Exception as e:  # noqa: BLE001
+    last_err: Exception | None = None
+    for attempt in (1, 2):
+        try:
+            csv_path = download_csv(key, start_date=sd, end_date=ed, out_dir=WORK, headless=True)
+            break
+        except Exception as e:  # noqa: BLE001
+            last_err = e
+            if attempt == 1:
+                print(f"[{key}] Intento 1 de scraping falló ({e}), reintento en 5s...")
+                time.sleep(5)
+
+    if csv_path is None:
         csv_path = _inbox_file(f"tgn_{key}.csv", f"{key}.csv")
         if csv_path is None:
-            errors.append(f"[{key}] No se pudo scrapear ni encontrar /inbox: {e}")
+            errors.append(f"[{key}] No se pudo scrapear (2 intentos) ni encontrar /inbox: {last_err}")
             return None
-        print(f"[{key}] Scraping falló, uso archivo manual de /inbox: {csv_path.name}")
+        print(f"[{key}] Scraping falló tras 2 intentos, uso archivo manual de /inbox: {csv_path.name}")
 
     data = csv_path.read_bytes()
     return parse_tgn_csv(
